@@ -45,13 +45,22 @@ class CalibrationWidget(QWidget):
         self.coordinatesLabel = QLabel("X:n Y:n")
         self.changeButton = QPushButton()
         self.changeButton.setText("Change")
+        self.changeButton.clicked.connect()
         self.nextButton = QPushButton()
         self.nextButton.setText("Next")
+        self.nextButton.clicked.connect(self.nextButtonClicked)
         self.layout.addWidget(self.stageLabel, 0, 0)
         self.layout.addWidget(self.coordinatesLabel, 1, 0)
         self.layout.addWidget(self.changeButton, 2, 0)
         self.layout.addWidget(self.nextButton, 2, 1)
         self.setLayout(self.layout)
+
+    def nextButtonClicked(self):
+        pass
+
+    def changeButtonClicked(self):
+        pass
+
 
 app = QApplication(sys.argv)
 w = MainWindow()
