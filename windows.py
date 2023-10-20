@@ -5,6 +5,10 @@ import calibration
 import structures
 
 lectures = []
+browsername = ""
+coordinates = []
+runnable = False
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -36,6 +40,7 @@ class MainWindow(QMainWindow):
     def addButtonClicked(self):
         self.w = AddLectureWidget()
         self.w.show()
+        self.checkRunCondition()
 
     def runButtonClicked(self):
         pass
@@ -43,10 +48,21 @@ class MainWindow(QMainWindow):
     def calibrationButtonClicked(self):
         self.w = CalibrationWidget()
         self.w.show()
+        self.checkRunCondition()
 
     def changeBrowserButtonClicked(self):
         self.w = ChangeBrowserName()
         self.w.show()
+        self.checkRunCondition()
+
+    def checkRunCondition(self):
+        global __runnable
+        if len(lectures) > 0 and browsername != "" and coordinates > 0:
+            __runnable = True
+            self.runButton.setEnabled(True)
+        else:
+            __runnable = False
+            self.runButton.setEnabled(False)
 
 
 class CalibrationWidget(QWidget):
@@ -71,21 +87,23 @@ class CalibrationWidget(QWidget):
         self.coordinatesLabel.setText(f'X: {calibration.xClick} Y: {calibration.yClick}')
         self.setWindowTitle("MoodleBot | CLick Calibration")
 
-
     def nextButtonClicked(self):
-        if (calibration.stage < 12):
+        if calibration.stage < 12:
             self.stageLabel.setText(calibration.stageText[calibration.stage])
             calibration.nextStage()
             calibration.setClick()
             self.coordinatesLabel.setText(f'X: {calibration.xClick} Y: {calibration.yClick}')
-        else:
-            self.nextButton.setEnabled(False)
+        elif calibration.stage == 12:
+            calibration.stage = calibration.stage + 1
+            self.nextButton.setText("Close")
             self.changeButton.setEnabled(False)
-
+        else:
+            self.close()
 
     def changeButtonClicked(self):
         calibration.setClick()
         self.coordinatesLabel.setText(f'X: {calibration.xClick} Y: {calibration.yClick}')
+
 
 class AddLectureWidget(QWidget):
     def __init__(self):
@@ -117,11 +135,15 @@ class ChangeBrowserName(QWidget):
         self.layout = QtWidgets.QGridLayout()
         self.input = QtWidgets.QLineEdit()
         self.button = QPushButton()
+        self.button.clicked.connect(self.buttonClicked)
         self.button.setText("Submit")
         self.layout.addWidget(self.input, 0, 0)
         self.layout.addWidget(self.button, 1, 0)
         self.setLayout(self.layout)
         self.setWindowTitle("MoodleBot | Type browser name")
+
+    def buttonClicked(self):
+        pass
 
 
 app = QApplication(sys.argv)

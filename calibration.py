@@ -20,7 +20,6 @@ coordinates = []
 xClick = 0
 yClick = 0
 
-#1 2 3 4 11
 def nextStage():
     global stage
     global coordinates
