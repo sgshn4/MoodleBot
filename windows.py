@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 import sys
 import calibration
 import structures
@@ -15,14 +15,18 @@ class MainWindow(QMainWindow):
         self.calibrationButton.setText("Calibrate")
         self.addSubhectButton = QtWidgets.QPushButton()
         self.addSubhectButton.setText("Add Subject")
+        self.changeBrowser = QtWidgets.QPushButton()
+        self.changeBrowser.setText("Change Browser")
         self.runButton = QtWidgets.QPushButton()
         self.runButton.setText("Run!")
         self.mainLayout.addWidget(self.calibrationButton, 0, 1)
         self.mainLayout.addWidget(self.addSubhectButton, 1, 1)
-        self.mainLayout.addWidget(self.runButton, 2, 1)
-        self.mainLayout.addWidget(self.table, 0, 0)
+        self.mainLayout.addWidget(self.changeBrowser, 2, 1)
+        self.mainLayout.addWidget(self.runButton, 3, 1)
+        self.mainLayout.addWidget(self.table, 0, 0, 0, 1)
         self.calibrationButton.clicked.connect(self.calibrationButtonClicked)
         self.addSubhectButton.clicked.connect(self.addButtonClicked)
+        self.changeBrowser.clicked.connect(self.changeBrowserButtonClicked)
         self.runButton.clicked.connect(self.runButtonClicked)
         self.widget = QWidget()
         self.widget.setLayout(self.mainLayout)
@@ -34,17 +38,21 @@ class MainWindow(QMainWindow):
         self.w.show()
 
     def runButtonClicked(self):
-        print('2')
+        pass
 
     def calibrationButtonClicked(self):
-        print('3')
         self.w = CalibrationWidget()
+        self.w.show()
+
+    def changeBrowserButtonClicked(self):
+        self.w = ChangeBrowserName()
         self.w.show()
 
 
 class CalibrationWidget(QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
         self.layout = QtWidgets.QGridLayout()
         self.stageLabel = QLabel("Stage")
         self.coordinatesLabel = QLabel("X:n Y:n")
@@ -61,6 +69,8 @@ class CalibrationWidget(QWidget):
         self.setLayout(self.layout)
         calibration.setClick()
         self.coordinatesLabel.setText(f'X: {calibration.xClick} Y: {calibration.yClick}')
+        self.setWindowTitle("MoodleBot | CLick Calibration")
+
 
     def nextButtonClicked(self):
         if (calibration.stage < 12):
@@ -96,9 +106,22 @@ class AddLectureWidget(QWidget):
         self.layout.addWidget(self.timerStart, 3, 0)
         self.layout.addWidget(self.submitButton, 4, 0)
         self.setLayout(self.layout)
+        self.setWindowTitle("MoodleBot | Add lecture")
 
     def submitButtonClicked(self):
         lectures.append(structures.Subject(self.input.text(), self.timerStart.time()))
+
+class ChangeBrowserName(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QtWidgets.QGridLayout()
+        self.input = QtWidgets.QLineEdit()
+        self.button = QPushButton()
+        self.button.setText("Submit")
+        self.layout.addWidget(self.input, 0, 0)
+        self.layout.addWidget(self.button, 1, 0)
+        self.setLayout(self.layout)
+        self.setWindowTitle("MoodleBot | Type browser name")
 
 
 app = QApplication(sys.argv)
