@@ -4,9 +4,8 @@ import sys
 import calibration
 import structures
 
-lectures = []
+data = structures.Data()
 browsername = ""
-coordinates = []
 runnable = False
 
 
@@ -57,7 +56,7 @@ class MainWindow(QMainWindow):
 
     def checkRunCondition(self):
         global __runnable
-        if len(lectures) > 0 and browsername != "" and coordinates > 0:
+        if len(data.getSubjects()) > 0 and browsername != "" and data.getCoordinates() > 0:
             __runnable = True
             self.runButton.setEnabled(True)
         else:
@@ -127,7 +126,7 @@ class AddLectureWidget(QWidget):
         self.setWindowTitle("MoodleBot | Add lecture")
 
     def submitButtonClicked(self):
-        lectures.append(structures.Subject(self.input.text(), self.timerStart.time()))
+        data.addLecture(structures.Subject(self.input.text(), self.timerStart.time()))
 
 class ChangeBrowserName(QWidget):
     def __init__(self):
@@ -144,6 +143,8 @@ class ChangeBrowserName(QWidget):
 
     def buttonClicked(self):
         pass
+
+
 
 
 app = QApplication(sys.argv)
