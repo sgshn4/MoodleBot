@@ -10,12 +10,12 @@ import time
 browsername = ""
 lectures = []
 runnable = False
-isRunning = True
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.isRunning = True
         self.mainLayout = QtWidgets.QGridLayout()
         self.table = QtWidgets.QTableWidget()
         self.table.setColumnCount(1)
@@ -44,9 +44,8 @@ class MainWindow(QMainWindow):
         self.updater.start()
 
     def task(self):
-        global isRunning
         global lectures
-        while isRunning:
+        while self.isRunning:
             self.table.setRowCount(len(lectures))
             for i in range(len(lectures)):
                 lectures = utils.configureLectures()
@@ -54,8 +53,7 @@ class MainWindow(QMainWindow):
             time.sleep(1)
 
     def closeEvent(self, event):
-        global isRunning
-        isRunning = False
+        self.isRunning = False
 
     def addButtonClicked(self):
         if self.checkConditions:
@@ -74,20 +72,19 @@ class MainWindow(QMainWindow):
     def changeBrowserButtonClicked(self):
         self.w = ChangeBrowserName()
         self.w.show()
-        self.checkRunCondition()
 
     def checkConditions(self):
-        if len(utils.configurePoints()) > 0 and len(utils.configureLectures()) > 0:
+        if len(utils.configurePoints()) > 0 and len(utils.configureLectures()) > 0 and browsername != "":
             return True
 
 
 class CalibrationWidget(QWidget):
     def __init__(self):
         super().__init__()
+        self.isRunning = True
         self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
         self.layout = QtWidgets.QGridLayout()
-        self.stageLabel = QLabel("Stage")
-        self.coordinatesLabel = QLabel("X:n Y:n")
+        self.stageLabel = QLabel("Welcome to calibration. Press next to start.")
         self.changeButton = QPushButton()
         self.changeButton.setText("Change")
         self.changeButton.clicked.connect(self.changeButtonClicked)
@@ -95,12 +92,10 @@ class CalibrationWidget(QWidget):
         self.nextButton.setText("Next")
         self.nextButton.clicked.connect(self.nextButtonClicked)
         self.layout.addWidget(self.stageLabel, 0, 0)
-        self.layout.addWidget(self.coordinatesLabel, 1, 0)
-        self.layout.addWidget(self.changeButton, 2, 0)
-        self.layout.addWidget(self.nextButton, 2, 1)
+        self.layout.addWidget(self.changeButton, 1, 0)
+        self.layout.addWidget(self.nextButton, 1, 1)
         self.setLayout(self.layout)
         calibration.setClick()
-        self.coordinatesLabel.setText(f'X: {calibration.xClick} Y: {calibration.yClick}')
         self.setWindowTitle("MoodleBot | CLick Calibration")
 
     def nextButtonClicked(self):
@@ -108,18 +103,17 @@ class CalibrationWidget(QWidget):
             self.stageLabel.setText(calibration.stageText[calibration.stage])
             calibration.nextStage()
             calibration.setClick()
-            self.coordinatesLabel.setText(f'X: {calibration.xClick} Y: {calibration.yClick}')
         elif calibration.stage == 12:
             calibration.stage = calibration.stage + 1
             self.nextButton.setText("Close")
             self.changeButton.setEnabled(False)
         else:
             utils.saveToFile("coordinates.json", calibration.coordinates)
+            self.isRunning = False
             self.close()
 
     def changeButtonClicked(self):
         calibration.setClick()
-        self.coordinatesLabel.setText(f'X: {calibration.xClick} Y: {calibration.yClick}')
 
 
 class AddLectureWidget(QWidget):
@@ -164,7 +158,7 @@ class ChangeBrowserName(QWidget):
         self.setWindowTitle("MoodleBot | Type browser name")
 
     def buttonClicked(self):
-        pass
+        browsername = structures.Browser(self.input)
 
 
 app = QApplication(sys.argv)
