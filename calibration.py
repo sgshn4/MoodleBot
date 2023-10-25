@@ -20,6 +20,7 @@ coordinates = []
 xClick = 0
 yClick = 0
 
+
 def nextStage():
     global stage
     global coordinates
@@ -41,8 +42,7 @@ def on_click(x, y, button, pressed):
         # Stop listener
         return False
 
+
 def setClick():
     listener = mouse.Listener(on_click=on_click)
     listener.start()
-
-

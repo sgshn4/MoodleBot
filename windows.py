@@ -1,19 +1,24 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel
 from PyQt5 import QtWidgets, QtCore
+from threading import Thread
 import sys
 import calibration
 import structures
+import utils
+import time
 
-data = structures.Data()
 browsername = ""
+lectures = []
 runnable = False
+isRunning = True
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.mainLayout = QtWidgets.QGridLayout()
-        self.table = QtWidgets.QTableView()
+        self.table = QtWidgets.QTableWidget()
+        self.table.setColumnCount(1)
         self.calibrationButton = QtWidgets.QPushButton()
         self.calibrationButton.setText("Calibrate")
         self.addSubhectButton = QtWidgets.QPushButton()
@@ -35,33 +40,45 @@ class MainWindow(QMainWindow):
         self.widget.setLayout(self.mainLayout)
         self.setCentralWidget(self.widget)
         self.setWindowTitle("MoodleBot")
+        self.updater = Thread(target=self.task)
+        self.updater.start()
+
+    def task(self):
+        global isRunning
+        global lectures
+        while isRunning:
+            self.table.setRowCount(len(lectures))
+            for i in range(len(lectures)):
+                lectures = utils.configureLectures()
+                self.table.setItem(i, 0, QtWidgets.QTableWidgetItem(lectures[i].url))
+            time.sleep(1)
+
+    def closeEvent(self, event):
+        global isRunning
+        isRunning = False
 
     def addButtonClicked(self):
-        self.w = AddLectureWidget()
-        self.w.show()
-        self.checkRunCondition()
+        if self.checkConditions:
+            self.w = AddLectureWidget()
+            self.w.show()
+
 
     def runButtonClicked(self):
-        pass
+        if self.checkConditions():
+            pass
 
     def calibrationButtonClicked(self):
         self.w = CalibrationWidget()
         self.w.show()
-        self.checkRunCondition()
 
     def changeBrowserButtonClicked(self):
         self.w = ChangeBrowserName()
         self.w.show()
         self.checkRunCondition()
 
-    def checkRunCondition(self):
-        global __runnable
-        if len(data.getSubjects()) > 0 and browsername != "" and data.getCoordinates() > 0:
-            __runnable = True
-            self.runButton.setEnabled(True)
-        else:
-            __runnable = False
-            self.runButton.setEnabled(False)
+    def checkConditions(self):
+        if len(utils.configurePoints()) > 0 and len(utils.configureLectures()) > 0:
+            return True
 
 
 class CalibrationWidget(QWidget):
@@ -97,6 +114,7 @@ class CalibrationWidget(QWidget):
             self.nextButton.setText("Close")
             self.changeButton.setEnabled(False)
         else:
+            utils.saveToFile("coordinates.json", calibration.coordinates)
             self.close()
 
     def changeButtonClicked(self):
@@ -126,7 +144,11 @@ class AddLectureWidget(QWidget):
         self.setWindowTitle("MoodleBot | Add lecture")
 
     def submitButtonClicked(self):
-        data.addLecture(structures.Subject(self.input.text(), self.timerStart.time()))
+        lectures.append(structures.Subject(self.input.text(), self.timerStart.time().hour(), self.timerStart.time().minute()))
+        utils.saveToFile("lectures.json", lectures, structures.SubjectEncoder)
+        self.close()
+
+
 
 class ChangeBrowserName(QWidget):
     def __init__(self):
@@ -143,8 +165,6 @@ class ChangeBrowserName(QWidget):
 
     def buttonClicked(self):
         pass
-
-
 
 
 app = QApplication(sys.argv)
