@@ -33,14 +33,14 @@ def nextStage():
 def on_click(x, y, button, pressed):
     global xClick
     global yClick
-    print('{0} at {1}'.format(
+    if not pressed:
+        xClick = x
+        yClick = y
+        nextStage()
+        print('{0} at {1}'.format(
         'Pressed' if pressed else 'Released',
         (x, y)))
-    xClick = x
-    yClick = y
-    if not pressed:
-        # Stop listener
-        return False
+
 
 
 def setClick():

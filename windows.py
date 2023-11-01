@@ -79,41 +79,30 @@ class MainWindow(QMainWindow):
 
 
 class CalibrationWidget(QWidget):
+
+    isTextUpdatable = True
+
     def __init__(self):
         super().__init__()
         self.isRunning = True
         self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
         self.layout = QtWidgets.QGridLayout()
         self.stageLabel = QLabel("Welcome to calibration. Press next to start.")
-        self.changeButton = QPushButton()
-        self.changeButton.setText("Change")
-        self.changeButton.clicked.connect(self.changeButtonClicked)
-        self.nextButton = QPushButton()
-        self.nextButton.setText("Next")
-        self.nextButton.clicked.connect(self.nextButtonClicked)
         self.layout.addWidget(self.stageLabel, 0, 0)
-        self.layout.addWidget(self.changeButton, 1, 0)
-        self.layout.addWidget(self.nextButton, 1, 1)
         self.setLayout(self.layout)
         calibration.setClick()
         self.setWindowTitle("MoodleBot | CLick Calibration")
+        self.updater = Thread(target=self.task)
+        self.updater.start()
 
-    def nextButtonClicked(self):
-        if calibration.stage < 12:
-            self.stageLabel.setText(calibration.stageText[calibration.stage])
-            calibration.nextStage()
-            calibration.setClick()
-        elif calibration.stage == 12:
-            calibration.stage = calibration.stage + 1
-            self.nextButton.setText("Close")
-            self.changeButton.setEnabled(False)
-        else:
-            utils.saveToFile("coordinates.json", calibration.coordinates)
-            self.isRunning = False
-            self.close()
-
-    def changeButtonClicked(self):
-        calibration.setClick()
+    def task(self):
+        while self.isTextUpdatable:
+            if calibration.stage == 12:
+                self.isTextUpdatable = False
+                self.close()
+            if calibration.stage < 12:
+                self.stageLabel.setText(calibration.stageText[calibration.stage])
+            time.sleep(0.1)
 
 
 class AddLectureWidget(QWidget):
